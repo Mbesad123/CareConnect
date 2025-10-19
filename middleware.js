@@ -1,25 +1,28 @@
-// ? CareConnect Middleware (Fixed for Next.js 14)
 import { NextResponse } from 'next/server'
-import { getToken } from 'next-auth/jwt'
 
-export async function middleware(req) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-  const { pathname } = req.nextUrl
+const PUBLIC_PATHS = ['/login', '/signup']
+const PROTECTED_PREFIXES = ['/', '/patients', '/appointments', '/reports', '/settings']
 
-  // Allow public and internal routes
-  if (
-    pathname.startsWith('/api/auth') ||
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/signup') ||
-    pathname.startsWith('/_next') ||
-    pathname === '/favicon.ico'
-  ) {
+export function middleware(request) {
+  const { pathname } = request.nextUrl
+
+  if (pathname.startsWith('/api') || pathname.startsWith('/_next') || pathname === '/favicon.ico') {
     return NextResponse.next()
   }
 
-  // Redirect unauthenticated users trying to access dashboard
-  if (!token && pathname.startsWith('/dashboard')) {
-    const url = new URL('/login', req.url)
+  if (PUBLIC_PATHS.includes(pathname)) {
+    return NextResponse.next()
+  }
+
+  const isProtected = PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+  if (!isProtected) {
+    return NextResponse.next()
+  }
+
+  const token = request.cookies.get('careconnect-token')?.value
+  if (!token) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
@@ -27,5 +30,5 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ['/:path*'],
 }
