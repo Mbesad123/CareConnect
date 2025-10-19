@@ -1,12 +1,9 @@
-// ? CareConnect Middleware (Fixed for Next.js 14)
 import { NextResponse } from 'next/server'
-import { getToken } from 'next-auth/jwt'
 
-export async function middleware(req) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-  const { pathname } = req.nextUrl
+export function middleware(request) {
+  const session = request.cookies.get('careconnect_session')
+  const { pathname } = request.nextUrl
 
-  // Allow public and internal routes
   if (
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/login') ||
@@ -17,9 +14,8 @@ export async function middleware(req) {
     return NextResponse.next()
   }
 
-  // Redirect unauthenticated users trying to access dashboard
-  if (!token && pathname.startsWith('/dashboard')) {
-    const url = new URL('/login', req.url)
+  if (!session && pathname.startsWith('/dashboard')) {
+    const url = new URL('/login', request.url)
     return NextResponse.redirect(url)
   }
 
