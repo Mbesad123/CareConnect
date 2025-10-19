@@ -3,9 +3,9 @@ import { fontFamily } from 'tailwindcss/defaultTheme'
 
 const config = {
   content: [
-    './src/app/**/*.{js,jsx,ts,tsx}',
-    './src/components/**/*.{js,jsx,ts,tsx}',
-    './src/lib/**/*.{js,jsx,ts,tsx}',
+    './app/**/*.{js,jsx,ts,tsx}',
+    './components/**/*.{js,jsx,ts,tsx}',
+    './lib/**/*.{js,jsx,ts,tsx}',
   ],
   theme: {
     extend: {
